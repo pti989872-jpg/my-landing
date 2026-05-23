@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+
+*.log
+server.err.log
+server.out.log
+
+data/*
+!data/.gitkeep

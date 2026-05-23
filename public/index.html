@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetroBoard Live</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --line: #dfe7f1;
+      --text: #142033;
+      --muted: #66758a;
+      --blue: #2563eb;
+      --blue-light: #eaf1ff;
+      --green: #118847;
+      --red-bg: #fff0f0;
+      --red-line: #ffc9c9;
+      --yellow-bg: #fff8dd;
+      --yellow-line: #f3dd8b;
+      --green-bg: #ecfdf2;
+      --green-line: #b7e5c7;
+      --shadow: 0 8px 28px rgba(18, 32, 51, 0.08);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    button, input, select, textarea {
+      font: inherit;
+    }
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+    .topbar {
+      height: 56px;
+      padding: 0 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .brand {
+      font-weight: 750;
+      color: var(--blue);
+      letter-spacing: 0;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      min-width: 0;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex: 0 0 auto;
+    }
+    .dot.online { background: var(--green); }
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+    .login {
+      max-width: 480px;
+      margin: 48px auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 26px;
+    }
+    .login h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    .login p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .input, .select, .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    .textarea {
+      min-height: 78px;
+      resize: vertical;
+    }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--blue);
+      background: #ffffff;
+    }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 10px 0 18px;
+    }
+    .primary {
+      background: var(--blue);
+      color: #ffffff;
+      border-radius: 7px;
+      min-height: 40px;
+      padding: 0 16px;
+      font-weight: 700;
+    }
+    .ghost {
+      background: #ffffff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      min-height: 36px;
+      padding: 0 12px;
+      font-weight: 650;
+    }
+    .error {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #fecaca;
+      background: #fff1f2;
+      color: #991b1b;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+    .app {
+      display: none;
+      gap: 16px;
+    }
+    .hero {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .meta {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: 14px;
+    }
+    .people {
+      min-width: 220px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+      line-height: 1.6;
+    }
+    .composer {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) 180px auto auto;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+    .composer .check {
+      margin: 0;
+      min-height: 40px;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .column {
+      min-height: 440px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .column.drag-over {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+    .column-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .column[data-id="mad"] .column-head {
+      background: var(--red-bg);
+      border-color: var(--red-line);
+    }
+    .column[data-id="sad"] .column-head {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-line);
+    }
+    .column[data-id="glad"] .column-head {
+      background: var(--green-bg);
+      border-color: var(--green-line);
+    }
+    .column-title {
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+    .column-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .cards {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      min-height: 360px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 12px;
+      box-shadow: 0 3px 12px rgba(18, 32, 51, 0.06);
+      cursor: grab;
+    }
+    .card:active {
+      cursor: grabbing;
+    }
+    .card.dragging {
+      opacity: 0.45;
+    }
+    .card-author {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .card-text {
+      white-space: pre-wrap;
+      line-height: 1.45;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+    .card-actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .solution {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 9px;
+      color: #14532d;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal {
+      background: #ffffff;
+      border-radius: 8px;
+      width: min(440px, 100%);
+      padding: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .modal h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    @media (max-width: 860px) {
+      .hero, .composer {
+        display: grid;
+      }
+      .people {
+        text-align: left;
+      }
+      .composer {
+        grid-template-columns: 1fr;
+      }
+      .board {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        padding: 0 14px;
+      }
+      .shell {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">RetroBoard Live</div>
+    <div class="status"><span class="dot" id="syncDot"></span><span id="syncText">ожидает входа</span></div>
+  </header>
+
+  <main class="shell">
+    <section class="login" id="loginView">
+      <h1>Вход на ретро-доску</h1>
+      <p>Введите имя и код комнаты. Для первого запуска код: <strong>retro2026</strong>.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="nameInput">Ваше имя</label>
+          <input class="input" id="nameInput" autocomplete="name" placeholder="Например, Мария С.">
+        </div>
+        <div class="field">
+          <label for="codeInput">Код комнаты</label>
+          <input class="input" id="codeInput" autocomplete="off" placeholder="retro2026">
+        </div>
+        <label class="check">
+          <input type="checkbox" id="loginAnonymous">
+          Войти инкогнито
+        </label>
+        <button class="primary" type="submit">Войти на доску</button>
+        <div class="error" id="loginError"></div>
+      </form>
+    </section>
+
+    <section class="app" id="appView">
+      <div class="hero">
+        <div>
+          <h1 id="boardTitle">RetroBoard</h1>
+          <div class="meta" id="boardMeta"></div>
+        </div>
+        <div class="people" id="peopleBox"></div>
+      </div>
+
+      <form class="composer" id="cardForm">
+        <textarea class="textarea" id="cardText" placeholder="Напишите стикер..."></textarea>
+        <select class="select" id="columnSelect"></select>
+        <label class="check">
+          <input type="checkbox" id="cardAnonymous">
+          Анонимно
+        </label>
+        <button class="primary" type="submit">Добавить</button>
+      </form>
+
+      <div class="board" id="board"></div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="solutionModal">
+    <form class="modal" id="solutionForm">
+      <h2>Назначить решение</h2>
+      <input type="hidden" id="solutionCardId">
+      <div class="field">
+        <label for="solutionOwner">Ответственный</label>
+        <input class="input" id="solutionOwner" placeholder="Например, Ольга Р.">
+      </div>
+      <div class="field">
+        <label for="solutionDue">Срок</label>
+        <input class="input" id="solutionDue" type="date">
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" type="button" id="closeSolution">Отмена</button>
+        <button class="primary" type="submit">Сохранить</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const state = {
+      participant: JSON.parse(localStorage.getItem("retroParticipant") || "null"),
+      board: null,
+      draggedCardId: null,
+    };
+
+    const loginView = document.getElementById("loginView");
+    const appView = document.getElementById("appView");
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+    const cardForm = document.getElementById("cardForm");
+    const boardEl = document.getElementById("board");
+    const columnSelect = document.getElementById("columnSelect");
+    const syncDot = document.getElementById("syncDot");
+    const syncText = document.getElementById("syncText");
+    const solutionModal = document.getElementById("solutionModal");
+    const solutionForm = document.getElementById("solutionForm");
+
+    function setSync(online, text) {
+      syncDot.classList.toggle("online", online);
+      syncText.textContent = text;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Ошибка запроса");
+      }
+      return data;
+    }
+
+    function showError(message) {
+      loginError.textContent = message;
+      loginError.style.display = "block";
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      loginError.style.display = "none";
+      try {
+        const data = await api("/api/login", {
+          method: "POST",
+          body: JSON.stringify({
+            name: document.getElementById("nameInput").value,
+            accessCode: document.getElementById("codeInput").value,
+            anonymous: document.getElementById("loginAnonymous").checked,
+          })
+        });
+        state.participant = data.participant;
+        localStorage.setItem("retroParticipant", JSON.stringify(state.participant));
+        await bootApp();
+      } catch (error) {
+        showError(error.message);
+      }
+    });
+
+    cardForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = document.getElementById("cardText").value.trim();
+      if (!text) return;
+      await api("/api/cards", {
+        method: "POST",
+        body: JSON.stringify({
+          token: state.participant.token,
+          text,
+          columnId: columnSelect.value,
+          anonymous: document.getElementById("cardAnonymous").checked,
+        })
+      });
+      document.getElementById("cardText").value = "";
+    });
+
+    solutionForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await api(`/api/cards/${document.getElementById("solutionCardId").value}/solution`, {
+        method: "POST",
+        body: JSON.stringify({
+          token: state.participant.token,
+          owner: document.getElementById("solutionOwner").value,
+          dueDate: document.getElementById("solutionDue").value,
+        })
+      });
+      closeSolutionModal();
+    });
+
+    document.getElementById("closeSolution").addEventListener("click", closeSolutionModal);
+    solutionModal.addEventListener("click", (event) => {
+      if (event.target === solutionModal) closeSolutionModal();
+    });
+
+    async function loadState() {
+      const data = await api("/api/state");
+      state.board = data.board;
+      render();
+    }
+
+    function render() {
+      loginView.style.display = "none";
+      appView.style.display = "grid";
+      document.getElementById("boardTitle").textContent = state.board.title;
+      document.getElementById("boardMeta").textContent = `${state.board.scenario} · ${state.board.team}`;
+      document.getElementById("peopleBox").innerHTML = `Участники онлайн/в комнате: <strong>${state.board.participants.length}</strong><br>${state.board.participants.map(p => escapeHtml(p.name)).join(", ") || "пока никого"}`;
+
+      columnSelect.innerHTML = state.board.columns
+        .map(column => `<option value="${column.id}">${escapeHtml(column.title)}</option>`)
+        .join("");
+
+      boardEl.innerHTML = "";
+      for (const column of state.board.columns) {
+        const columnCards = state.board.cards.filter(card => card.columnId === column.id);
+        const columnEl = document.createElement("section");
+        columnEl.className = "column";
+        columnEl.dataset.id = column.id;
+        columnEl.innerHTML = `
+          <div class="column-head">
+            <div class="column-title">${escapeHtml(column.title)} · ${columnCards.length}</div>
+            <div class="column-hint">${escapeHtml(column.hint)}</div>
+          </div>
+          <div class="cards" data-column-id="${column.id}"></div>
+        `;
+        const cardsEl = columnEl.querySelector(".cards");
+        columnCards.forEach((card, index) => cardsEl.appendChild(renderCard(card, index)));
+        setupDropZone(columnEl, cardsEl);
+        boardEl.appendChild(columnEl);
+      }
+    }
+
+    function renderCard(card) {
+      const cardEl = document.createElement("article");
+      cardEl.className = "card";
+      cardEl.draggable = true;
+      cardEl.dataset.cardId = card.id;
+      cardEl.innerHTML = `
+        <div class="card-author">${card.anonymous ? "Инкогнито" : escapeHtml(card.author)}</div>
+        <div class="card-text">${escapeHtml(card.text)}</div>
+        <div class="card-actions">
+          <button class="pill" type="button" data-reaction="like">Нравится ${card.reactions.like || 0}</button>
+          <button class="pill" type="button" data-reaction="important">Важно ${card.reactions.important || 0}</button>
+          <button class="pill" type="button" data-solution>Решение</button>
+        </div>
+        ${card.solution ? `<div class="solution">Решение: ${escapeHtml(card.solution.owner || "без ответственного")} · ${escapeHtml(card.solution.dueDate || "без срока")}</div>` : ""}
+      `;
+      cardEl.addEventListener("dragstart", () => {
+        state.draggedCardId = card.id;
+        cardEl.classList.add("dragging");
+      });
+      cardEl.addEventListener("dragend", () => {
+        state.draggedCardId = null;
+        cardEl.classList.remove("dragging");
+        document.querySelectorAll(".column").forEach(col => col.classList.remove("drag-over"));
+      });
+      cardEl.querySelectorAll("[data-reaction]").forEach(button => {
+        button.addEventListener("click", () => react(card.id, button.dataset.reaction));
+      });
+      cardEl.querySelector("[data-solution]").addEventListener("click", () => openSolutionModal(card.id));
+      return cardEl;
+    }
+
+    function setupDropZone(columnEl, cardsEl) {
+      columnEl.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        columnEl.classList.add("drag-over");
+      });
+      columnEl.addEventListener("dragleave", (event) => {
+        if (!columnEl.contains(event.relatedTarget)) {
+          columnEl.classList.remove("drag-over");
+        }
+      });
+      columnEl.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        columnEl.classList.remove("drag-over");
+        if (!state.draggedCardId) return;
+        const afterCard = getAfterCard(cardsEl, event.clientY);
+        const position = afterCard
+          ? Array.from(cardsEl.querySelectorAll(".card")).indexOf(afterCard)
+          : cardsEl.querySelectorAll(".card").length;
+        await api(`/api/cards/${state.draggedCardId}/move`, {
+          method: "POST",
+          body: JSON.stringify({
+            token: state.participant.token,
+            columnId: columnEl.dataset.id,
+            position,
+          })
+        });
+      });
+    }
+
+    function getAfterCard(container, y) {
+      const cards = [...container.querySelectorAll(".card:not(.dragging)")];
+      return cards.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        }
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
+    async function react(cardId, reaction) {
+      await api(`/api/cards/${cardId}/react`, {
+        method: "POST",
+        body: JSON.stringify({
+          token: state.participant.token,
+          reaction,
+        })
+      });
+    }
+
+    function openSolutionModal(cardId) {
+      document.getElementById("solutionCardId").value = cardId;
+      document.getElementById("solutionOwner").value = "";
+      document.getElementById("solutionDue").value = "";
+      solutionModal.style.display = "flex";
+    }
+
+    function closeSolutionModal() {
+      solutionModal.style.display = "none";
+    }
+
+    function connectEvents() {
+      const events = new EventSource("/events");
+      events.addEventListener("open", () => setSync(true, `синхронизация включена · ${state.participant.name}`));
+      events.addEventListener("change", () => loadState());
+      events.addEventListener("error", () => setSync(false, "переподключение..."));
+    }
+
+    async function bootApp() {
+      await loadState();
+      connectEvents();
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    if (state.participant && state.participant.token) {
+      bootApp().catch(() => {
+        localStorage.removeItem("retroParticipant");
+        state.participant = null;
+        loginView.style.display = "block";
+        setSync(false, "нужен вход");
+      });
+    } else {
+      setSync(false, "нужен вход");
+    }
+  </script>
+</body>
+</html>
