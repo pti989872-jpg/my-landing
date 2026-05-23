@@ -67,7 +67,7 @@ def ensure_data_file():
 
 def read_board():
     ensure_data_file()
-    with DATA_FILE.open("r", encoding="utf-8") as file:
+    with DATA_FILE.open("r", encoding="utf-8-sig") as file:
         return json.load(file)
 
 

@@ -427,6 +427,7 @@
       participant: JSON.parse(localStorage.getItem("retroParticipant") || "null"),
       board: null,
       draggedCardId: null,
+      syncTimer: null,
     };
 
     const loginView = document.getElementById("loginView");
@@ -454,9 +455,15 @@
           ...(options.headers || {})
         }
       });
-      const data = await response.json();
+      const contentType = response.headers.get("Content-Type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : { error: await response.text() };
       if (!response.ok) {
-        throw new Error(data.error || "Ошибка запроса");
+        const fallback = response.status === 404
+          ? "API ретро-доски не найден. Проверьте деплой Vercel."
+          : "Ошибка запроса";
+        throw new Error(data.error || fallback);
       }
       return data;
     }
@@ -651,10 +658,11 @@
     }
 
     function connectEvents() {
-      const events = new EventSource("/events");
-      events.addEventListener("open", () => setSync(true, `синхронизация включена · ${state.participant.name}`));
-      events.addEventListener("change", () => loadState());
-      events.addEventListener("error", () => setSync(false, "переподключение..."));
+      setSync(true, `синхронизация включена · ${state.participant.name}`);
+      if (state.syncTimer) clearInterval(state.syncTimer);
+      state.syncTimer = setInterval(() => {
+        loadState().catch(() => setSync(false, "переподключение..."));
+      }, 3000);
     }
 
     async function bootApp() {
